@@ -16,7 +16,6 @@ public class DialogNewNote extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         // All the rest of the code goes here
-
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(getActivity());
 
@@ -37,22 +36,34 @@ public class DialogNewNote extends DialogFragment {
         builder.setView(dialogView).setMessage("Add a new note");
 
         // Handle the cancel button
-        btnCancel.setOnClickListener(new View.OnClickListener() {
+        btnCancel.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dismiss();
             }
         });
 
+        builder.setView(dialogView).setMessage("Add a new note");
+
+        // Handle the cancel button
+        btnCancel.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
+
+
         // Handle the OK button
         btnOK.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
 
                 // Create a new note
                 Note newNote = new Note();
 
-                // Set its variables to match the user's entries on the form.
+                // Set its variables to match the users entries on the form
                 newNote.setTitle(editTitle.getText().toString());
                 newNote.setDescription(editDescription.getText().toString());
                 newNote.setIdea(checkBoxIdea.isChecked());
@@ -70,6 +81,10 @@ public class DialogNewNote extends DialogFragment {
             }
         });
 
+
         return builder.create();
+
+
     }
+
 }

@@ -18,27 +18,32 @@ public class DialogShowNote extends DialogFragment {
 
         // All the other code goes here
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_new_note, null);
+        View dialogView = inflater.inflate(R.layout.dialog_show_note, null);
+
         TextView txtTitle = (TextView) dialogView.findViewById(R.id.txtTitle);
+
         TextView txtDescription = (TextView) dialogView.findViewById(R.id.txtDescription);
 
         txtTitle.setText(mNote.getTitle());
         txtDescription.setText(mNote.getDescription());
 
         TextView txtImportant = (TextView) dialogView.findViewById(R.id.textViewImportant);
+
         TextView txtTodo = (TextView) dialogView.findViewById(R.id.textViewTodo);
+
         TextView txtIdea = (TextView) dialogView.findViewById(R.id.textViewIdea);
 
-        if (!mNote.isImportant()) {
-            txtImportant.setVisibility((View.GONE));
+        if (!mNote.isImportant()){
+            txtImportant.setVisibility(View.GONE);
         }
 
-        if (!mNote.isTodo()) {
+        if (!mNote.isTodo()){
             txtTodo.setVisibility(View.GONE);
         }
 
-        if (!mNote.isIdea()) {
+        if (!mNote.isIdea()){
             txtIdea.setVisibility(View.GONE);
         }
 
@@ -54,10 +59,15 @@ public class DialogShowNote extends DialogFragment {
         });
 
         return builder.create();
+
+
+
     }
+
 
     // Receive a note from the MainActivity
     public void sendNoteSelected(Note noteSelected) {
         mNote = noteSelected;
     }
+
 }
