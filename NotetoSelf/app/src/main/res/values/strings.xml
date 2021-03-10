@@ -24,5 +24,7 @@
     <string name="theme_title">Theme</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="add_new_note">Add a new note</string>
+    <string name="your_note">Your note</string>
 
 </resources>
