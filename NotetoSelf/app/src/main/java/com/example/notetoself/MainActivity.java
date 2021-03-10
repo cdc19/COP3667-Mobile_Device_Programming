@@ -1,5 +1,7 @@
 package com.example.notetoself;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +10,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,9 +20,14 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<Note> noteList = new ArrayList<>();
+    private JSONSerializer mSerializer;
+
+    //private List<Note> noteList = new ArrayList<>();
+    private List<Note> noteList;
     private RecyclerView recyclerView;
     private NoteAdapter mAdapter;
+    private boolean mShowDividers;
+    private SharedPreferences mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,19 +48,57 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        recyclerView = (RecyclerView)
-                findViewById(R.id.recyclerView);
+        mSerializer = new JSONSerializer("NoteToSelf.json", getApplicationContext());
 
+        try {
+            noteList = mSerializer.load();
+        } catch (Exception e) {
+            noteList = new ArrayList<Note>();
+            Log.e("Error loading notes: ", "", e);
+        }
+
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         mAdapter = new NoteAdapter(this, noteList);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator((new DefaultItemAnimator()));
 
-        // Add a neat dividing line between items in the list
-        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        // Add a neat dividing line between items in the list - removed in Chapter 17
+        // recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
         // set the adapter
         recyclerView.setAdapter(mAdapter);
+    }
+
+    public void saveNotes() {
+        try {
+            mSerializer.save(noteList);
+        } catch(Exception e) {
+            Log.e("Error Saving Notes", "", e);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveNotes();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPrefs = getSharedPreferences("Note to self", MODE_PRIVATE);
+        mShowDividers = mPrefs.getBoolean("dividers", true);
+
+        if (mShowDividers) {
+            // Add a neat dividing line between list items
+            recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        } else {
+            // check there are some dividers or the app will crash
+            if (recyclerView.getItemDecorationCount() > 0) {
+                recyclerView.removeItemDecorationAt(0);
+            }
+        }
     }
 
     public void createNewNote(Note n){
@@ -85,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
