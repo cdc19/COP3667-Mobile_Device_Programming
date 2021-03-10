@@ -2,20 +2,24 @@ package com.example.notetoself;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
-
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
+import android.view.View;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Temporary code
-    Note mTempNote = new Note();
-
+    private List<Note> noteList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private NoteAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,31 +40,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        recyclerView = (RecyclerView)
+                findViewById(R.id.recyclerView);
 
+        mAdapter = new NoteAdapter(this, noteList);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator((new DefaultItemAnimator()));
 
+        // Add a neat dividing line between items in the list
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
-        // Temporary code
-        Button button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                // Create a new DialogShowNote called dialog
-                DialogShowNote dialog = new DialogShowNote();
-
-                // Send the note via the sendNoteSelected method
-                dialog.sendNoteSelected(mTempNote);
-
-                // Create the dialog
-                dialog.show(getSupportFragmentManager(), "123");
-            }
-        });
-
+        // set the adapter
+        recyclerView.setAdapter(mAdapter);
     }
 
     public void createNewNote(Note n){
         // Temporary code
-        mTempNote = n;
+        // mTempNote = n;
+        noteList.add(n);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public void showNote(int noteToShow){
+        DialogShowNote dialog = new DialogShowNote();
+        dialog.sendNoteSelected(noteList.get(noteToShow));
+        dialog.show(getSupportFragmentManager(), "");
     }
 
 
