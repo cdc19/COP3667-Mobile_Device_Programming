@@ -4,9 +4,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.RectF;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.util.ArrayList;
 
 public class LiveDrawingView extends SurfaceView implements Runnable {
 
@@ -33,6 +38,10 @@ public class LiveDrawingView extends SurfaceView implements Runnable {
     private int mFontMargin;
 
     // The particle systems will be declared here later
+    private ArrayList<ParticleSystem> mParticleSystems = new ArrayList<>();
+    private int mNextSystem = 0;
+    private final int MAX_SYSTEMS = 1000;
+    private int mParticlesPerSystem = 100;
 
     // Here is the Thread and two control variables
     private Thread mThread = null;
@@ -40,6 +49,10 @@ public class LiveDrawingView extends SurfaceView implements Runnable {
     // This volatile variable can be accessed from inside and outside the thread
     private volatile boolean mDrawing;
     private boolean mPaused = true;
+
+    //  These will be used to make simple buttons
+    private RectF mResetButton;
+    private RectF mTogglePauseButton;
 
 
     /* The LiveDrawingView constructor called when this line:
@@ -62,7 +75,27 @@ public class LiveDrawingView extends SurfaceView implements Runnable {
         // getHolder is a method of SurfaceView
         mOurHolder = getHolder();
         mPaint = new Paint();
+
+        // Initialize the two buttons
+        mResetButton = new RectF(0, 0, 100, 100);
+        mTogglePauseButton = new RectF(0, 150, 100, 250);
+
+        // Initialize the particles and their systems
+        for (int i = 0; i < MAX_SYSTEMS; i++) {
+            mParticleSystems.add(new ParticleSystem());
+            mParticleSystems.get(i).init(mParticlesPerSystem);
+        } // End for
+
     } // End LiveDrawingView constructor
+
+    private void update() {
+        // Update the particles
+        for (int i = 0; i < mParticleSystems.size(); i++) {
+            if (mParticleSystems.get(i).mIsRunning) {
+                mParticleSystems.get(i).update(mFPS);
+            } // End if
+        } // End for
+    } // End update method
 
     // Draw the particle systems and the HUD
     private void draw() {
@@ -79,10 +112,15 @@ public class LiveDrawingView extends SurfaceView implements Runnable {
             // Choose the font size
             mPaint.setTextSize(mFontSize);
 
+            // Draw the particle systems
+            for (int i = 0; i < mNextSystem; i++) mParticleSystems.get(i).draw(mCanvas, mPaint);
+
+            // Draw the buttons
+            mCanvas.drawRect(mResetButton, mPaint);
+            mCanvas.drawRect(mTogglePauseButton, mPaint);
+
             // Draw the HUD
-            if (DEBUGGING) {
-                printDebuggingText();
-            }
+            if (DEBUGGING) printDebuggingText();
 
             // Display the drawing on scree. unlockCanvasAndPost is a method of SurfaceHolder.
             mOurHolder.unlockCanvasAndPost(mCanvas);
@@ -124,15 +162,56 @@ public class LiveDrawingView extends SurfaceView implements Runnable {
         } // End While
     } // End run method
 
-    private void update() {
-    }
-
-    private void printDebuggingText() {
+     private void printDebuggingText() {
         int debugSize = mFontSize / 2;
         int debugStart = 150;
         mPaint.setTextSize(debugSize);
         mCanvas.drawText("FPS: " + mFPS, 10, debugStart + debugSize, mPaint);
+
+         // We will add more code here in the next chapter
+         mCanvas.drawText("Systems: " + mNextSystem,
+                 10, mFontMargin + debugStart + debugSize * 2, mPaint);
+
+         mCanvas.drawText("Particles: " + mNextSystem * mParticlesPerSystem,
+                 10, mFontMargin + debugStart + debugSize * 3, mPaint);
     }  // End printDebuggingText method
+
+   @Override
+   public boolean onTouchEvent(MotionEvent motionEvent){
+       // User moved a finger while touching screen
+       if ((motionEvent.getAction() &
+               MotionEvent.ACTION_MASK)
+               == MotionEvent.ACTION_MOVE) {
+
+           mParticleSystems.get(mNextSystem).emitParticles(
+                   new PointF(motionEvent.getX(), motionEvent.getY()));
+
+           mNextSystem++;
+           if (mNextSystem == MAX_SYSTEMS) {
+               mNextSystem = 0;
+           } // End if
+       } // End if
+
+       // Did the user touch the screen
+       if ((motionEvent.getAction() &
+               MotionEvent.ACTION_MASK)
+               == MotionEvent.ACTION_DOWN) {
+
+           // User pressed the screen see if it was in a button
+           if (mResetButton.contains(motionEvent.getX(),
+                   motionEvent.getY())) {
+               // Clear the screen of all particles
+               mNextSystem = 0;
+           } // End if
+
+           // User pressed the screen see if it was in a button
+           if (mTogglePauseButton.contains(motionEvent.getX(),
+                   motionEvent.getY())) {
+               mPaused = !mPaused;
+           } // End if
+       } // End if
+       return true;
+   } // End onTouchEvent method
 
     // This method is called by LiveDrawingActivity when the user quits the app
     public void pause() {
