@@ -2,6 +2,7 @@ package com.example.manipulatingbitmaps;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,7 +12,7 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.widget.ImageView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     // Here are all th objects (instances) of classes that we need to do some drawing
     ImageView myImageView;
